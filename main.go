@@ -52,7 +52,7 @@ func pushDataToDatabase(timestamp time.Time) error {
 
 // API Handler
 func getCurrentTimeHandler(w http.ResponseWriter, r *http.Request) {
-	// Load Toronto time zone
+	// timezone for Toronto
 	location, err := time.LoadLocation("America/Toronto")
 	if err != nil {
 		log.Printf("Failed to load timezone: %v\n", err)
