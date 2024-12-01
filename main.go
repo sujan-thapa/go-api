@@ -18,22 +18,23 @@ type TimeResponse struct {
 
 var db *sql.DB
 
-// Connect to MySQL Database
-func initDB() {
+// database connection
+func connDB() {
 	var err error
-	// Replace the DSN with your database credentials
+	// database connection strings
+
 	dsn := "root:@tcp(127.0.0.1:3306)/go_api"
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatalf("Error opening database: %v\n", err)
+		log.Fatalf("Error: %v\n", err)
 	}
 
 	// Test database connection
 	err = db.Ping()
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v\n", err)
+		log.Fatalf("Connection error: %v\n", err)
 	}
-	log.Println("Database connection successful")
+	log.Println("Connection successful!")
 }
 
 // Push data into the database
@@ -46,7 +47,7 @@ func pushDataToDatabase(timestamp time.Time) error {
 
 	// Log the number of rows affected
 	rowsAffected, _ := result.RowsAffected()
-	log.Printf("Data inserted successfully, Rows affected: %d\n", rowsAffected)
+	log.Printf("Time log inserted successfully, Rows affected: %d\n", rowsAffected)
 	return nil
 }
 
@@ -55,8 +56,8 @@ func getCurrentTimeHandler(w http.ResponseWriter, r *http.Request) {
 	// timezone for Toronto
 	location, err := time.LoadLocation("America/Toronto")
 	if err != nil {
-		log.Printf("Failed to load timezone: %v\n", err)
-		http.Error(w, "Failed to load timezone", http.StatusInternalServerError)
+		// log.Printf("Having problem to load the timezone: %v\n", err)
+		http.Error(w, "Having problem to load the timezone", http.StatusInternalServerError) // 500 Internal Server Error
 		return
 	}
 
@@ -66,12 +67,13 @@ func getCurrentTimeHandler(w http.ResponseWriter, r *http.Request) {
 	// Push data into the database
 	err = pushDataToDatabase(currentTime)
 	if err != nil {
-		log.Printf("Failed to push data to database: %v\n", err)
-		http.Error(w, "Failed to log time to database", http.StatusInternalServerError)
+		// Log the error message to the console
+		// log.Printf("Sorry!, Processing of time log to the server failed!: %v\n", err)
+
+		http.Error(w, "Sorry!, Processing of time log to the server failed!", http.StatusInternalServerError)
 		return
 	}
 
-	// Prepare JSON response
 	response := TimeResponse{CurrentTime: currentTime.Format("2006-01-02 15:04:05")}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -79,13 +81,14 @@ func getCurrentTimeHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// Initialize database connection
-	initDB()
+	connDB()
+	// Close database connection when main function exits
 	defer db.Close()
 
-	// Set up routes
+	// API endpoint
 	http.HandleFunc("/current-time", getCurrentTimeHandler)
 
-	// Start server
+	// server port
 	port := 8080
 	log.Printf("Server running on port %d...\n", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)

@@ -32,4 +32,6 @@
     go run main.go
 
 4. Then using the http://localhost:8080/current-time, you can see the current timespan of Toronto in a JSON format.
+5. In every rendering of time of Toronto, current timespan will be saved in the database.
+
 ```
